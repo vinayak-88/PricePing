@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
   },
   itemsTracking: [
     {
-      item: {
+      itemId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Item",
         required: true,
