@@ -29,12 +29,12 @@ productRouter.post("/product-details", async (req, res, next) => {
       throw new AppError("Invalid Product ID format", 400);
     }
     const productExists = await Item.findById(productId);
-    if(!productExists){
-        const item = await Item.create({
-            itemId : productId,
-            itemName : 
-        })
-    }
+    // if(!productExists){
+    //     const item = await Item.create({
+    //         itemId : productId,
+    //         itemName : 
+    //     })
+    // }
   } catch (err) {}
 });
 
