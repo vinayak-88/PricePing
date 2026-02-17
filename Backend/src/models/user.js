@@ -28,8 +28,7 @@ const userSchema = new mongoose.Schema({
   itemsTracking: [
     {
       itemId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Item",
+        type : String,
         required: true,
       },
       targetPrice: {

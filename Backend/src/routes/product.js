@@ -16,21 +16,10 @@ const ensureAuthenticated = (req, res, next) => {
   res.status(401).json({ message: "Please login to perform the action" });
 };
 
-//utility functions
-const productIdValidation = async (productId) => {
-  //check for valid productid
-  if (!mongoose.Types.ObjectId.isValid(productId)) {
-    throw new AppError("Invalid Product ID format", 400);
-  }
-  //check if product exists in db
-  const productExists = await Item.findById(productId);
-  if (!productExists) throw new AppError("Product not found", 404);
-};
-
 //routes
 productRouter.get("/get-history", async (req, res, next) => {
   try {
-    const { rawUrl } = req.body;
+    const { rawUrl } = req.query;
     validateUrl(rawUrl);
     const { iid, var_ } = extractEbayIds(rawUrl);
     const itemId = var_ ? `${iid}-${var_}` : iid;
@@ -55,23 +44,31 @@ productRouter.post(
     try {
       // req.user comes from the SESSION, not the frontend.
       const userId = req.user.id;
-      const { productId, targetPrice } = req.body;
+      const { rawUrl, targetPrice } = req.body;
 
       const user = await User.findById(userId);
       if (!user) throw new AppError("User not found", 404);
 
-      //product validation
-      await productIdValidation(productId);
+      //url validation and productid formation
+
+      validateUrl(rawUrl);
+      const { iid, var_ } = extractEbayIds(rawUrl);
+      const itemId = var_ ? `${iid}-${var_}` : iid;
+
+      let product = await Item.findOne({ itemId });
+      if (!product) {
+        product = await syncEbayProduct({ iid, var_ });
+      }
 
       //check if user is already tracking that product
       const isAlreadyTracking = user.itemsTracking.some(
-        (item) => item.itemId.toString() === productId,
+        (item) => item.itemId === itemId,
       );
 
       if (isAlreadyTracking)
         throw new AppError("You are already tracking this item", 400);
 
-      user.itemsTracking.push({ itemId: productId, targetPrice });
+      user.itemsTracking.push({ itemId, targetPrice });
       await user.save();
       res.status(200).json({
         success: true,

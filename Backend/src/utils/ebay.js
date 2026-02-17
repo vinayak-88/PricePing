@@ -56,7 +56,7 @@ const extractEbayIds = (rawUrl) => {
 
   if (!iid) throw new AppError("Could not find item ID in URL", 400);
 
-  const var_ = params.get("var");
+  const var_ = params.get("var") || null;
   return { iid, var_ };
 };
 
