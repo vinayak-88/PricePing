@@ -26,11 +26,6 @@ authRouter.get(
 );
 
 
-
-/*
-  STEP 3: Logout user
-*/
-
 authRouter.get("/logout", (req, res) => {
   req.logout(() => {
     res.redirect("/");

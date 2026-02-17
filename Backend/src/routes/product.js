@@ -1,9 +1,13 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const productRouter = express.Router();
 const User = require("../models/user");
 const Item = require("../models/item");
 const AppError = require("../utils/Error");
+const { syncEbayProduct } = require("../services/ebayService");
 
+
+//utility middleware
 const ensureAuthenticated = (req, res, next) => {
   // This is the server-side check that CANNOT be bypassed by Redux edits
   if (req.isAuthenticated()) {
@@ -12,6 +16,7 @@ const ensureAuthenticated = (req, res, next) => {
   res.status(401).json({ message: "Please login to perform the action" });
 };
 
+//utility functions
 const productIdValidation = async (productId) => {
   //check for valid productid
   if (!mongoose.Types.ObjectId.isValid(productId)) {
@@ -22,20 +27,14 @@ const productIdValidation = async (productId) => {
   if (!productExists) throw new AppError("Product not found", 404);
 };
 
-productRouter.post("/product-details", async (req, res, next) => {
+//routes
+productRouter.get("/get-history", async (req, res, next) => {
   try {
-    const itemId = req.body.productId;
-    if (!mongoose.Types.ObjectId.isValid(productId)) {
-      throw new AppError("Invalid Product ID format", 400);
-    }
-    const productExists = await Item.findById(productId);
-    // if(!productExists){
-    //     const item = await Item.create({
-    //         itemId : productId,
-    //         itemName : 
-    //     })
-    // }
-  } catch (err) {}
+    const { rawUrl } = req.body;
+    validateUrl(rawUrl)
+  } catch (err) {
+    next(err); // Passes to your error handler
+  }
 });
 
 productRouter.post(
@@ -44,7 +43,6 @@ productRouter.post(
   async (req, res, next) => {
     try {
       // req.user comes from the SESSION, not the frontend.
-      // This is secure.
       const userId = req.user.id;
       const { productId, targetPrice } = req.body;
 
