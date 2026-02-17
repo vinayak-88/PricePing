@@ -23,17 +23,17 @@ const itemSchema = new mongoose.Schema({
     },
   ],
   itemUrl: {
-    type : String,
-    required : true
+    type: String,
+    required: true,
   },
-  itemPhoto : {
-    type : String,
-    default : process.env.DEFAULT_ITEM_PIC_URL
+  itemPhoto: {
+    type: String,
+    default: process.env.DEFAULT_ITEM_PIC_URL,
   },
-  availability : {
-    type : Boolean,
-    default : false
-  }
+  availability: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 module.exports = mongoose.model("Item", itemSchema);

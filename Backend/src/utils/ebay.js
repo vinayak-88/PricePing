@@ -37,7 +37,10 @@ const validateUrl = (rawUrl) => {
     pattern.test(parsed.pathname),
   );
   if (!isProductPath) {
-    throw new AppError("URL is not a product page (must contain /itm/ or /p/)");
+    throw new AppError(
+      "URL is not a product page (must contain /itm/ or /p/)",
+      400,
+    );
   }
 };
 
@@ -51,17 +54,10 @@ const extractEbayIds = (rawUrl) => {
     iid = [...pathParts].reverse().find((p) => /^\d+$/.test(p)) ?? null;
   }
 
+  if (!iid) throw new AppError("Could not find item ID in URL", 400);
+
   const var_ = params.get("var");
+  return { iid, var_ };
+};
 
-  return { iid, var: var_ };
-}
-
-const getProductId = (rawUrl) => {
-  const { valid, reason } = validateEbayUrl(rawUrl);
-  if (!valid) throw new Error(`Invalid eBay URL: ${reason}`);
-
-  const { iid, var: var_ } = extractEbayIds(rawUrl);
-  if (!iid) throw new Error(`Could not extract item ID from URL: ${rawUrl}`);
-
-  return var_ ? `${iid}-${var_}` : iid;
-}
+module.exports = { validateUrl, extractEbayIds };

@@ -5,7 +5,7 @@ const User = require("../models/user");
 const Item = require("../models/item");
 const AppError = require("../utils/Error");
 const { syncEbayProduct } = require("../services/ebayService");
-
+const { validateUrl, extractEbayIds } = require("../utils/ebay");
 
 //utility middleware
 const ensureAuthenticated = (req, res, next) => {
@@ -31,7 +31,18 @@ const productIdValidation = async (productId) => {
 productRouter.get("/get-history", async (req, res, next) => {
   try {
     const { rawUrl } = req.body;
-    validateUrl(rawUrl)
+    validateUrl(rawUrl);
+    const { iid, var_ } = extractEbayIds(rawUrl);
+    const itemId = var_ ? `${iid}-${var_}` : iid;
+
+    let product = await Item.findOne({ itemId });
+    if (!product) {
+      product = await syncEbayProduct({ iid, var_ });
+    }
+    res.status(200).json({
+      success: true,
+      data: product,
+    });
   } catch (err) {
     next(err); // Passes to your error handler
   }

@@ -3,12 +3,12 @@ const Item = require("../models/item");
 const { getEbayToken } = require("./ebayAuth");
 const AppError = require("../utils/Error");
 
-const syncEbayProduct = async (ebayItemId) => {
+const syncEbayProduct = async ({ iid, var_ }) => {
   try {
     const token = await getEbayToken();
 
     // eBay RESTful Item ID format
-    const resourceId = `v1|${ebayItemId}|0`;
+    const resourceId = `v1|${iid}|${var_ ?? 0}`;
 
     const response = await axios.get(
       `https://api.ebay.com/buy/browse/v1/item/${resourceId}`,
@@ -20,13 +20,21 @@ const syncEbayProduct = async (ebayItemId) => {
       },
     );
 
-    const { title, price, itemWebUrl, image } = response.data;
+    const { title, price, itemWebUrl, image, estimatedAvailabilities } =
+      response.data;
+    const itemId = var_ ? `${iid}-${var_}` : iid;
+
     const product = await Item.findOneAndUpdate(
-      { itemId: ebayItemId },
+      { itemId },
       {
-        itemName: title,
-        itemUrl: itemWebUrl,
-        itemPhoto: image?.imageUrl,
+        $set: {
+          itemName: title,
+          itemUrl: itemWebUrl,
+          itemPhoto: image?.imageUrl,
+          availability:
+            estimatedAvailabilities?.[0]?.estimatedAvailabilityStatus ===
+            "IN_STOCK",
+        },
         $push: {
           priceHistory: { amount: parseFloat(price.value), date: new Date() },
         },
@@ -36,6 +44,7 @@ const syncEbayProduct = async (ebayItemId) => {
 
     return product;
   } catch (error) {
+    if (error instanceof AppError) throw error;
     throw new AppError("PRODUCT_SYNC_FAILED", 400);
   }
 };
