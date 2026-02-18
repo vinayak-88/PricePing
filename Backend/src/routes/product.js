@@ -46,7 +46,17 @@ productRouter.post(
       const userId = req.user.id;
       const { rawUrl, targetPrice } = req.body;
 
-      const user = await User.findById(userId);
+      if (
+        targetPrice === undefined ||
+        targetPrice === null ||
+        typeof targetPrice !== "number" ||
+        !isFinite(targetPrice) ||
+        targetPrice <= 0
+      ) {
+        throw new AppError("targetPrice must be a positive number", 400);
+      }
+
+      const user = req.user;
       if (!user) throw new AppError("User not found", 404);
 
       //url validation and productid formation
@@ -87,20 +97,24 @@ productRouter.get(
     try {
       //comes from the session
       const userId = req.user.id;
-
-      const user = await User.findOne({ authId: userId });
+      const user = req.user;
+      //for the small edge case when user get's deleted from db but somehow session is still active
+      if (!user) throw new AppError("User not found", 404);
 
       //get all items to send item details
       const itemIds = user.itemsTracking.map((t) => t.itemId);
       const items = await Item.find({ itemId: { $in: itemIds } });
 
-      const list = user.itemsTracking.map((tracking) => {
+      const list = [];
+      for (const tracking of user.itemsTracking) {
         const item = items.find((i) => i.itemId === tracking.itemId);
-        return {
-          ...item?.toObject(),
-          targetPrice: tracking.targetPrice,
-        };
-      });
+        if (item) {
+          list.push({
+            ...item.toObject(),
+            targetPrice: tracking.targetPrice,
+          });
+        }
+      }
 
       res.status(200).json({
         success: true,

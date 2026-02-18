@@ -28,7 +28,7 @@ const itemSchema = new mongoose.Schema({
   },
   itemPhoto: {
     type: String,
-    default: process.env.DEFAULT_ITEM_PIC_URL,
+    default: () => process.env.DEFAULT_ITEM_PIC_URL,
   },
   availability: {
     type: Boolean,

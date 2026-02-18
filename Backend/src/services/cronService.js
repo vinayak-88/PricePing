@@ -42,6 +42,7 @@ const syncAllProducts = async () => {
         }
       }
     } catch (error) {
+      console.error(`[CRON] Failed to sync ${item.itemId}:`, error.message);
       failed++;
     }
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -54,7 +55,7 @@ const startCronJobs = () => {
     try {
       await syncAllProducts();
     } catch (error) {
-        console.error("[CRON] Sync failed:", error.message);
+      console.error("[CRON] Sync failed:", error.message);
     }
   });
 };

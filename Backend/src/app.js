@@ -4,21 +4,11 @@ const { connectDB } = require("./config/database");
 const session = require("express-session");
 const passport = require("passport");
 const authRouter = require("./routes/auth");
-
+const productRouter = require("./routes/product");
+const { startCronJobs } = require("./services/cronService");
 require("./passport");
 
 const app = express();
-app.use("/", authRouter);
-
-app.use((err, req, res, next) => {
-  err.statusCode = err.statusCode || 500;
-  err.status = err.status || "error";
-
-  res.status(err.statusCode).json({
-    status: err.status,
-    message: err.message
-  });
-});
 
 const PORT = process.env.PORT;
 connectDB()
@@ -38,8 +28,25 @@ connectDB()
 
     app.use(passport.initialize());
     app.use(passport.session());
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    app.use("/", authRouter);
+    app.use("/api/products", productRouter);
+
+    //error handler
+    app.use((err, req, res, next) => {
+      err.statusCode = err.statusCode || 500;
+      err.status = err.status || "error";
+
+      res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message,
+      });
+    });
+
     app.listen(PORT, () => {
       console.log("server running");
+      startCronJobs();
     });
   })
   .catch((err) => {

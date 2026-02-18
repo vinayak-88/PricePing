@@ -34,6 +34,7 @@ const sendPriceAlertEmail = async ({
   try {
     await apiInstance.sendTransacEmail(sendSmtpEmail);
   } catch (error) {
+    console.error("Email send failed:", error);
     throw new AppError("Failed to send email", 500);
   }
 };
