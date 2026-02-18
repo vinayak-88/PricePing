@@ -80,4 +80,36 @@ productRouter.post(
   },
 );
 
+productRouter.get(
+  "/tracking-list",
+  ensureAuthenticated,
+  async (req, res, next) => {
+    try {
+      //comes from the session
+      const userId = req.user.id;
+
+      const user = await User.findOne({ authId: userId });
+
+      //get all items to send item details
+      const itemIds = user.itemsTracking.map((t) => t.itemId);
+      const items = await Item.find({ itemId: { $in: itemIds } });
+
+      const list = user.itemsTracking.map((tracking) => {
+        const item = items.find((i) => i.itemId === tracking.itemId);
+        return {
+          ...item?.toObject(),
+          targetPrice: tracking.targetPrice,
+        };
+      });
+
+      res.status(200).json({
+        success: true,
+        data: list,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
 module.exports = productRouter;
