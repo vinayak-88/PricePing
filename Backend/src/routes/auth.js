@@ -19,24 +19,24 @@ const redirectIfAuthenticated = (req, res, next) => {
 };
 
 authRouter.get(
-  "/auth/google",authLimiter,
+  "/google",authLimiter,
   redirectIfAuthenticated,
   passport.authenticate("google", { scope: ["openid", "profile", "email"] }),
 );
 
 authRouter.get(
-  "/auth/google/callback",authLimiter,
+  "/google/callback",authLimiter,
   redirectIfAuthenticated,
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
     // Always go back to main page
-    res.redirect("/");
+    res.redirect(process.env.FRONTEND_URL || "/");
   },
 );
 
 authRouter.get("/logout", (req, res) => {
   req.logout(() => {
-    res.redirect("/");
+    res.redirect(process.env.FRONTEND_URL || "/");
   });
 });
 

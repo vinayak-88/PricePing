@@ -28,12 +28,16 @@ const userSchema = new mongoose.Schema({
   itemsTracking: [
     {
       itemId: {
-        type : String,
+        type: String,
         required: true,
       },
       targetPrice: {
         type: Number,
         required: true,
+      },
+      lastAlertedPrice: {
+        type: Number,
+        default: null,
       },
     },
   ],

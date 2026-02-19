@@ -10,7 +10,7 @@ require("./passport");
 
 const app = express();
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 connectDB()
   .then(() => {
     app.use(
@@ -30,7 +30,7 @@ connectDB()
     app.use(passport.session());
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
-    app.use("/", authRouter);
+    app.use("/auth", authRouter);
     app.use("/api/products", productRouter);
 
     //error handler

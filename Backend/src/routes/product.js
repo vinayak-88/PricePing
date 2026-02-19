@@ -1,5 +1,4 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const productRouter = express.Router();
 const User = require("../models/user");
 const Item = require("../models/item");
@@ -43,8 +42,10 @@ productRouter.post(
   async (req, res, next) => {
     try {
       // req.user comes from the SESSION, not the frontend.
-      const userId = req.user.id;
+      const user = req.user;
       const { rawUrl, targetPrice } = req.body;
+
+      if (!user) throw new AppError("User not found", 404);
 
       if (
         targetPrice === undefined ||
@@ -55,9 +56,6 @@ productRouter.post(
       ) {
         throw new AppError("targetPrice must be a positive number", 400);
       }
-
-      const user = req.user;
-      if (!user) throw new AppError("User not found", 404);
 
       //url validation and productid formation
 
@@ -96,7 +94,6 @@ productRouter.get(
   async (req, res, next) => {
     try {
       //comes from the session
-      const userId = req.user.id;
       const user = req.user;
       //for the small edge case when user get's deleted from db but somehow session is still active
       if (!user) throw new AppError("User not found", 404);

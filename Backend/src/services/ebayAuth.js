@@ -16,7 +16,7 @@ const getEbayToken = async () => {
   try {
     const response = await axios.post(
       "https://api.ebay.com/identity/v1/oauth2/token",
-      "grant_type=client_credentials&scope=https://api.ebay.com/oauth/scope/buy.item.bulk",
+      "grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope/buy.item.bulk",
       {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
